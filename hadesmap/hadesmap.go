@@ -10,6 +10,8 @@ import (
 	"github.com/nfnt/resize"
 )
 
+const cellSize = 1.0 / 7.0 // 7 cells in a map both horizontally and vertically
+
 // GenerateBaseImage generates the base image, composed of the real in game map with overlayed coordinates.
 func GenerateBaseImage(screenFilePath, mapFilePath string) (draw.Image, error) {
 	screenshotImage, err := loadImage(screenFilePath)
@@ -35,14 +37,16 @@ func DrawCoords(baseImage draw.Image, coords string) (image.Image, error) {
 	if !isValidCoord(coords) {
 		return nil, fmt.Errorf("invalid coordinate: %s", coords)
 	}
-	arrowImage, err := loadImage("res/arrow_" + getImagePathForCoords(coords) + ".png")
+	hexSelectorImg, err := loadImage("res/hex.png")
 	if err != nil {
 		return nil, err
 	}
+	hexImageResized := resize.Resize(0, uint(cellSize*float64(baseImage.Bounds().Dy())), hexSelectorImg, resize.Lanczos3)
 
-	arrowRect := getTargetPoint(coords, baseImage.Bounds(), arrowImage.Bounds())
+	hexRect := getTargetPoint(coords, baseImage.Bounds(), hexImageResized.Bounds())
 
-	draw.Draw(baseImage, arrowRect, arrowImage, image.Point{0, 0}, draw.Over)
+	fmt.Println(hexRect)
+	draw.Draw(baseImage, hexRect, hexImageResized, image.Point{0, 0}, draw.Over)
 	return baseImage, nil
 }
 
@@ -65,34 +69,15 @@ func isValidCoord(coord string) bool {
 	return false
 }
 
-func getImagePathForCoords(coords string) string {
-	if coords == "" {
-		return ""
-	}
-
-	const nw, ne, sw, se = "nw", "ne", "sw", "se"
-	directions := map[string]string{
-		"a1": nw, "a2": nw, "a3": nw, "a4": nw,
-		"b1": nw, "b2": nw, "b3": nw, "b4": nw, "b5": nw,
-		"c1": nw, "c2": nw, "c3": nw, "c4": nw, "c5": nw, "c6": nw,
-		"d1": nw, "d2": nw, "d3": nw, "d4": nw, "d5": nw, "d6": nw, "d7": nw,
-		"e2": nw, "e3": nw, "e4": nw, "e5": nw, "e6": nw, "e7": nw,
-		"f3": nw, "f4": nw, "f5": nw, "f6": nw, "f7": nw,
-		"g4": nw, "g5": nw, "g6": nw, "g7": nw,
-	}
-
-	return directions[coords]
-}
-
-func getTargetPoint(coords string, base, arrow image.Rectangle) image.Rectangle {
+func getTargetPoint(coords string, base, hex image.Rectangle) image.Rectangle {
 	coordPoint := image.Point{
 		int(float64(base.Dx()) * newCellPoint(coords).x),
 		int(float64(base.Dy()) * newCellPoint(coords).y),
 	}
 
-	arrowRect := image.Rectangle{coordPoint, coordPoint.Add(arrow.Max)}
+	hexRect := image.Rectangle{coordPoint, coordPoint.Add(hex.Max)}
 
-	return arrowRect
+	return hexRect
 }
 
 func loadImage(filePath string) (image.Image, error) {
