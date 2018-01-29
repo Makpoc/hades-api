@@ -27,14 +27,14 @@ func useHTTP() {
 }
 
 func imageHandler(w http.ResponseWriter, r *http.Request) {
-	queryParams := r.URL.Query()
-	err := generateImage(queryParams.Get("coords"))
+	coord := r.URL.Query().Get("coords")
+	err := generateImage(coord)
 	if err != nil {
 		returnError(w, err)
 		return
 	}
 
-	var path = "output/dest.png"
+	var path = getImagePath(coord)
 
 	img, err := os.Open(path)
 	if err != nil {

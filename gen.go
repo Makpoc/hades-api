@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"image"
 	"image/png"
 	"os"
@@ -9,11 +10,21 @@ import (
 	"github.com/makpoc/hadesmap/hadesmap"
 )
 
+const outputPath = "output/"
+
+func getImagePath(coord string) string {
+	return filepath.Join(outputPath, fmt.Sprintf("map_%s.png", coord))
+}
+
 func generateImage(coord string) error {
 
 	resPath, err := filepath.Abs("./res")
 	if err != nil {
 		return err
+	}
+
+	if _, err := os.Stat(getImagePath(coord)); err == nil {
+		return nil
 	}
 
 	baseImage, err := hadesmap.GenerateBaseImage(resPath+"/screenshot.png", resPath+"/map.png")
@@ -31,7 +42,7 @@ func generateImage(coord string) error {
 		result = baseImage
 	}
 
-	dstImage, err := os.Create("output/dest.png")
+	dstImage, err := os.Create(getImagePath(coord))
 	if err != nil {
 		return err
 	}
