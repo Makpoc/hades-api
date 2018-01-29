@@ -52,7 +52,7 @@ var verticalOffset = map[int]float64{
 	6: -2,
 }
 
-const shiftFixCoefficient = 0.07
+const shiftFixCoefficient = 0.007
 
 func getCellPoint(r, c int) cellPoint {
 	row := float64(r)
