@@ -6,6 +6,7 @@ import (
 	"image/draw"
 	"image/png"
 	"os"
+	"strings"
 
 	"github.com/nfnt/resize"
 )
@@ -45,7 +46,6 @@ func DrawCoords(baseImage draw.Image, coords string) (image.Image, error) {
 
 	hexRect := getTargetPoint(coords, baseImage.Bounds(), hexImageResized.Bounds())
 
-	fmt.Println(hexRect)
 	draw.Draw(baseImage, hexRect, hexImageResized, image.Point{0, 0}, draw.Over)
 	return baseImage, nil
 }
@@ -61,6 +61,7 @@ func isValidCoord(coord string) bool {
 		"g4", "g5", "g6", "g7",
 	}
 
+	coord = strings.ToLower(coord)
 	for _, c := range directions {
 		if coord == c {
 			return true

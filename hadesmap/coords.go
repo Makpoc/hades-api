@@ -1,7 +1,6 @@
 package hadesmap
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 )
@@ -57,8 +56,6 @@ const shiftFixCoefficient = 0.007
 func getCellPoint(r, c int) cellPoint {
 	row := float64(r)
 	col := float64(c)
-
-	fmt.Printf("%d:%d\n", r, c)
 
 	var verticalCellCenterOffset float64
 
