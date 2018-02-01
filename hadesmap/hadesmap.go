@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"image"
 	"image/draw"
+	"image/jpeg"
 	"image/png"
+
 	"os"
 	"strings"
 
@@ -15,11 +17,11 @@ const cellSize = 1.0 / 7.0 // 7 cells in a map both horizontally and vertically
 
 // GenerateBaseImage generates the base image, composed of the real in game map with overlayed coordinates.
 func GenerateBaseImage(screenFilePath, mapFilePath string) (draw.Image, error) {
-	screenshotImage, err := loadImage(screenFilePath)
+	screenshotImage, err := LoadImage(screenFilePath)
 	if err != nil {
 		return nil, err
 	}
-	mapImage, err := loadImage(mapFilePath)
+	mapImage, err := LoadImage(mapFilePath)
 	if err != nil {
 		return nil, err
 	}
@@ -34,11 +36,11 @@ func GenerateBaseImage(screenFilePath, mapFilePath string) (draw.Image, error) {
 }
 
 // DrawCoords draws an arrow, pointing to the given coordinate.
-func DrawCoords(baseImage draw.Image, coords string) (image.Image, error) {
+func DrawCoords(baseImage draw.Image, coords string) (draw.Image, error) {
 	if !isValidCoord(coords) {
 		return nil, fmt.Errorf("invalid coordinate: %s", coords)
 	}
-	hexSelectorImg, err := loadImage("res/hex.png")
+	hexSelectorImg, err := LoadImage("res/hex.png")
 	if err != nil {
 		return nil, err
 	}
@@ -81,15 +83,26 @@ func getTargetPoint(coords string, base, hex image.Rectangle) image.Rectangle {
 	return hexRect
 }
 
-func loadImage(filePath string) (image.Image, error) {
+// LoadImage loads an image from the disc
+func LoadImage(filePath string) (image.Image, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
 		return nil, err
 	}
 	defer file.Close()
-	screenshotImage, err := png.Decode(file)
-	if err != nil {
-		return nil, err
+
+	var screenshotImage image.Image
+	if strings.HasSuffix(filePath, ".jpeg") {
+		screenshotImage, err = jpeg.Decode(file)
+		if err != nil {
+			return nil, err
+		}
+	} else if strings.HasSuffix(filePath, ".png") {
+		screenshotImage, err = png.Decode(file)
+		if err != nil {
+			return nil, err
+		}
 	}
+
 	return screenshotImage, nil
 }

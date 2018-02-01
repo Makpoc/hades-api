@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"image"
-	"image/png"
+	"image/draw"
+	"image/jpeg"
+
 	"os"
 	"path/filepath"
 
@@ -13,42 +15,74 @@ import (
 const outputPath = "output/"
 
 func getImagePath(coord string) string {
-	return filepath.Join(outputPath, fmt.Sprintf("map_%s.png", coord))
+	if coord == "" {
+		return filepath.Join(outputPath, "base.jpeg")
+	}
+	return filepath.Join(outputPath, fmt.Sprintf("map_%s.jpeg", coord))
 }
 
 func generateImage(coord string) error {
-
 	resPath, err := filepath.Abs("./res")
 	if err != nil {
 		return err
 	}
 
+	// if the image with coords already exists
 	if _, err := os.Stat(getImagePath(coord)); err == nil {
+		// use it
 		return nil
 	}
 
-	baseImage, err := hadesmap.GenerateBaseImage(resPath+"/screenshot.png", resPath+"/map.png")
-	if err != nil {
-		return err
+	var baseImage image.Image
+	var dBaseImage draw.Image
+	baseImagePath := getImagePath("")
+	if _, err := os.Stat(baseImagePath); err == nil {
+		// load the image from the disk
+		baseImage, err = hadesmap.LoadImage(baseImagePath)
+		if err != nil {
+			return err
+		}
+
+		if dbi, ok := baseImage.(draw.Image); ok {
+			dBaseImage = dbi
+		}
 	}
 
-	var result image.Image
+	if dBaseImage == nil {
+		// if we cannot convert to draw.Image - generate it again.
+		dBaseImage, err = hadesmap.GenerateBaseImage(resPath+"/screenshot.jpeg", resPath+"/map.png")
+		if err != nil {
+			return err
+		}
+
+		err = saveImage(baseImagePath, dBaseImage)
+		if err != nil {
+			return err
+		}
+	}
+
+	var result draw.Image
 	if coord != "" {
-		result, err = hadesmap.DrawCoords(baseImage, coord)
+		result, err = hadesmap.DrawCoords(dBaseImage, coord)
 		if err != nil {
 			return err
 		}
 	} else {
-		result = baseImage
+		result = dBaseImage
 	}
 
-	dstImage, err := os.Create(getImagePath(coord))
+	return saveImage(getImagePath(coord), result)
+}
+
+// saveImage saves the image on the file system as a JPEG file
+func saveImage(filePath string, image image.Image) error {
+	file, err := os.Create(filePath)
 	if err != nil {
 		return err
 	}
-	defer dstImage.Close()
+	defer file.Close()
 
-	err = png.Encode(dstImage, result)
+	err = jpeg.Encode(file, image, nil)
 	if err != nil {
 		return err
 	}

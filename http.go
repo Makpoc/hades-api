@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 )
 
 var secret string
@@ -23,11 +24,15 @@ func useHTTP() {
 	http.HandleFunc("/map", auth(imageHandler))
 
 	fmt.Printf("Starting server on port: %s\n", port)
-	http.ListenAndServe(":"+port, nil)
+	err = http.ListenAndServe(":"+port, nil)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
 
 func imageHandler(w http.ResponseWriter, r *http.Request) {
-	coord := r.URL.Query().Get("coords")
+	coord := strings.ToLower(r.URL.Query().Get("coords"))
 	err := generateImage(coord)
 	if err != nil {
 		returnError(w, err)
@@ -43,7 +48,7 @@ func imageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer img.Close()
 
-	w.Header().Set("Content-Type", "image/png")
+	w.Header().Set("Content-Type", "image/jpeg")
 	_, err = io.Copy(w, img)
 	if err != nil {
 		returnError(w, err)
