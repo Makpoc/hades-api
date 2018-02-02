@@ -49,9 +49,14 @@ func generateImage(args []string) error {
 		}
 	}
 
+	var layers = []string{
+		resPath + "/screenshot.jpeg",
+		resPath + "/map.png",
+		resPath + "/labels.png",
+	}
 	if dBaseImage == nil {
 		// if we cannot convert to draw.Image - generate it again.
-		dBaseImage, err = hadesmap.GenerateBaseImage(resPath+"/screenshot.jpeg", resPath+"/map.png")
+		dBaseImage, err = hadesmap.GenerateBaseImage(layers)
 		if err != nil {
 			return err
 		}

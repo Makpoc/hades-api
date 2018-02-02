@@ -41,23 +41,27 @@ type hex struct {
 const cellSize = 1.0 / 7.0 // 7 cells in a map both horizontally and vertically
 
 // GenerateBaseImage generates the base image, composed of the real in game map with overlayed coordinates.
-func GenerateBaseImage(screenFilePath, mapFilePath string) (draw.Image, error) {
-	screenshotImage, err := LoadImage(screenFilePath)
-	if err != nil {
-		return nil, err
+func GenerateBaseImage(layers []string) (draw.Image, error) {
+	var baseImage *image.RGBA
+
+	var bounds image.Rectangle
+	for i, layer := range layers {
+		img, err := LoadImage(layer)
+		if err != nil {
+			return nil, err
+		}
+
+		if i == 0 {
+			bounds = img.Bounds()
+			baseImage = image.NewRGBA(image.Rect(0, 0, bounds.Dx(), bounds.Dy()))
+		}
+
+		if bounds != img.Bounds() {
+			img = resize.Resize(uint(bounds.Dx()), uint(bounds.Dy()), img, resize.Lanczos3)
+		}
+
+		draw.Draw(baseImage, baseImage.Bounds(), img, image.Point{0, 0}, draw.Over)
 	}
-	mapImage, err := LoadImage(mapFilePath)
-	if err != nil {
-		return nil, err
-	}
-
-	imageBounds := screenshotImage.Bounds()
-
-	mapImageResized := resize.Resize(uint(imageBounds.Dx()), uint(imageBounds.Dy()), mapImage, resize.Lanczos3)
-
-	baseImage := image.NewRGBA(image.Rect(0, 0, imageBounds.Dx(), imageBounds.Dy()))
-	draw.Draw(baseImage, baseImage.Bounds(), screenshotImage, image.Point{0, 0}, draw.Over)
-	draw.Draw(baseImage, baseImage.Bounds(), mapImageResized, image.Point{0, 0}, draw.Over)
 
 	return baseImage, nil
 }
