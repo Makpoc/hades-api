@@ -81,20 +81,20 @@ func LoadImage(filePath string) (image.Image, error) {
 	}
 	defer file.Close()
 
-	var screenshotImage image.Image
+	var img image.Image
 	if strings.HasSuffix(filePath, ".jpeg") {
-		screenshotImage, err = jpeg.Decode(file)
+		img, err = jpeg.Decode(file)
 		if err != nil {
 			return nil, err
 		}
 	} else if strings.HasSuffix(filePath, ".png") {
-		screenshotImage, err = png.Decode(file)
+		img, err = png.Decode(file)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	return screenshotImage, nil
+	return img, nil
 }
 
 // getHex constructs and returns the hex object, containing the image and to rectangle to use on top of the provided base image bounds
