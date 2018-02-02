@@ -6,12 +6,26 @@ import (
 	"image/draw"
 	"image/jpeg"
 	"image/png"
-
 	"os"
+
 	"strings"
 
 	"github.com/nfnt/resize"
 )
+
+type color int
+
+const (
+	green color = iota
+	orange
+	pink
+	yellow
+)
+
+type hex struct {
+	img  image.Image
+	rect image.Rectangle
+}
 
 const cellSize = 1.0 / 7.0 // 7 cells in a map both horizontally and vertically
 
@@ -26,64 +40,43 @@ func GenerateBaseImage(screenFilePath, mapFilePath string) (draw.Image, error) {
 		return nil, err
 	}
 
-	mapImageResized := resize.Resize(uint(screenshotImage.Bounds().Dx()), uint(screenshotImage.Bounds().Dy()), mapImage, resize.Lanczos3)
+	imageBounds := screenshotImage.Bounds()
 
-	baseImage := image.NewRGBA(image.Rect(0, 0, screenshotImage.Bounds().Dx(), screenshotImage.Bounds().Dy()))
+	mapImageResized := resize.Resize(uint(imageBounds.Dx()), uint(imageBounds.Dy()), mapImage, resize.Lanczos3)
+
+	baseImage := image.NewRGBA(image.Rect(0, 0, imageBounds.Dx(), imageBounds.Dy()))
 	draw.Draw(baseImage, baseImage.Bounds(), screenshotImage, image.Point{0, 0}, draw.Over)
 	draw.Draw(baseImage, baseImage.Bounds(), mapImageResized, image.Point{0, 0}, draw.Over)
 
 	return baseImage, nil
 }
 
-// DrawCoords draws an arrow, pointing to the given coordinate.
-func DrawCoords(baseImage draw.Image, coords string) (draw.Image, error) {
-	if !isValidCoord(coords) {
-		return nil, fmt.Errorf("invalid coordinate: %s", coords)
-	}
-	hexSelectorImg, err := LoadImage("res/hex.png")
+// func DrawCoordsEmpty(baseBounds image.Rectangle, coords []string) (draw.Image, error) {
+
+// 	tempImage := image.NewRGBA(baseBounds)
+// 	var err error
+// 	for _, coord := range coords {
+// 		tempImage, err = DrawCoords(tempImage, coord)
+// 		if err != nil {
+// 			return nil, err
+// 		}
+// 	}
+
+// 	return tempImage, nil
+// }
+
+// HighlightCoord highlights the provided coordinate.
+func HighlightCoord(baseImage draw.Image, coords string) (draw.Image, error) {
+	hex, err := getHex(coords, green, baseImage.Bounds())
 	if err != nil {
 		return nil, err
 	}
-	hexImageResized := resize.Resize(0, uint(cellSize*float64(baseImage.Bounds().Dy())), hexSelectorImg, resize.Lanczos3)
 
-	hexRect := getTargetPoint(coords, baseImage.Bounds(), hexImageResized.Bounds())
-
-	draw.Draw(baseImage, hexRect, hexImageResized, image.Point{0, 0}, draw.Over)
+	draw.Draw(baseImage, hex.rect, hex.img, image.Point{0, 0}, draw.Over)
 	return baseImage, nil
 }
 
-func isValidCoord(coord string) bool {
-	directions := []string{
-		"a1", "a2", "a3", "a4",
-		"b1", "b2", "b3", "b4", "b5",
-		"c1", "c2", "c3", "c4", "c5", "c6",
-		"d1", "d2", "d3", "d4", "d5", "d6", "d7",
-		"e2", "e3", "e4", "e5", "e6", "e7",
-		"f3", "f4", "f5", "f6", "f7",
-		"g4", "g5", "g6", "g7",
-	}
-
-	coord = strings.ToLower(coord)
-	for _, c := range directions {
-		if coord == c {
-			return true
-		}
-	}
-	return false
-}
-
-func getTargetPoint(coords string, base, hex image.Rectangle) image.Rectangle {
-	coordPoint := image.Point{
-		int(float64(base.Dx()) * newCellPoint(coords).x),
-		int(float64(base.Dy()) * newCellPoint(coords).y),
-	}
-
-	hexRect := image.Rectangle{coordPoint, coordPoint.Add(hex.Max)}
-
-	return hexRect
-}
-
-// LoadImage loads an image from the disc
+// LoadImage loads an image from the disc. Supported formats are .jpeg and .png
 func LoadImage(filePath string) (image.Image, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -105,4 +98,53 @@ func LoadImage(filePath string) (image.Image, error) {
 	}
 
 	return screenshotImage, nil
+}
+
+// getHex constructs and returns the hex object, containing the image and to rectangle to use on top of the provided base image bounds
+func getHex(coord string, color color, baseBounds image.Rectangle) (hex, error) {
+	if !isValidCoord(coord) {
+		return hex{}, fmt.Errorf("invalid coordinate: %s", coord)
+	}
+	hexImg, err := LoadImage("res/hex.png")
+	if err != nil {
+		return hex{}, err
+	}
+
+	hexImageResized := resize.Resize(0, uint(cellSize*float64(baseBounds.Dy())), hexImg, resize.Lanczos3)
+	hexRect := getTargetPoint(coord, baseBounds, hexImageResized.Bounds())
+
+	return hex{img: hexImageResized, rect: hexRect}, nil
+}
+
+// isValidCoord checks if the provided coordinate string is valid for the current map schema
+func isValidCoord(coord string) bool {
+	directions := []string{
+		"a1", "a2", "a3", "a4",
+		"b1", "b2", "b3", "b4", "b5",
+		"c1", "c2", "c3", "c4", "c5", "c6",
+		"d1", "d2", "d3", "d4", "d5", "d6", "d7",
+		"e2", "e3", "e4", "e5", "e6", "e7",
+		"f3", "f4", "f5", "f6", "f7",
+		"g4", "g5", "g6", "g7",
+	}
+
+	coord = strings.ToLower(coord)
+	for _, c := range directions {
+		if coord == c {
+			return true
+		}
+	}
+	return false
+}
+
+// getTargetPoint calculates the place where to put the hex rectangle in the base image
+func getTargetPoint(coords string, base, hex image.Rectangle) image.Rectangle {
+	coordPoint := image.Point{
+		int(float64(base.Dx()) * newCellPoint(coords).x),
+		int(float64(base.Dy()) * newCellPoint(coords).y),
+	}
+
+	hexRect := image.Rectangle{coordPoint, coordPoint.Add(hex.Max)}
+
+	return hexRect
 }

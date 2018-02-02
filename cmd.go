@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 )
 
 func useCmd() {
@@ -10,7 +11,7 @@ func useCmd() {
 	if len(os.Args) > 2 {
 		coord = os.Args[2]
 	}
-	err := generateImage(coord)
+	err := generateImage(strings.Split(coord, ","))
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)

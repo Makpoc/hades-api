@@ -5,6 +5,7 @@ import (
 	"image"
 	"image/draw"
 	"image/jpeg"
+	"strings"
 
 	"os"
 	"path/filepath"
@@ -14,28 +15,28 @@ import (
 
 const outputPath = "output/"
 
-func getImagePath(coord string) string {
-	if coord == "" {
+func getImagePath(coords []string) string {
+	if len(coords) == 0 {
 		return filepath.Join(outputPath, "base.jpeg")
 	}
-	return filepath.Join(outputPath, fmt.Sprintf("map_%s.jpeg", coord))
+	return filepath.Join(outputPath, fmt.Sprintf("map_%s.jpeg", strings.Join(coords, "_")))
 }
 
-func generateImage(coord string) error {
+func generateImage(coords []string) error {
 	resPath, err := filepath.Abs("./res")
 	if err != nil {
 		return err
 	}
 
 	// if the image with coords already exists
-	if _, err := os.Stat(getImagePath(coord)); err == nil {
+	if _, err := os.Stat(getImagePath(coords)); err == nil {
 		// use it
 		return nil
 	}
 
 	var baseImage image.Image
 	var dBaseImage draw.Image
-	baseImagePath := getImagePath("")
+	baseImagePath := getImagePath(nil)
 	if _, err := os.Stat(baseImagePath); err == nil {
 		// load the image from the disk
 		baseImage, err = hadesmap.LoadImage(baseImagePath)
@@ -62,16 +63,23 @@ func generateImage(coord string) error {
 	}
 
 	var result draw.Image
-	if coord != "" {
-		result, err = hadesmap.DrawCoords(dBaseImage, coord)
-		if err != nil {
-			return err
+	if len(coords) > 0 {
+		for _, coord := range coords {
+			result, err = hadesmap.HighlightCoord(dBaseImage, coord)
+			if err != nil {
+				return err
+			}
 		}
 	} else {
 		result = dBaseImage
 	}
 
-	return saveImage(getImagePath(coord), result)
+	err = saveImage(getImagePath(coords), result)
+	if err != nil {
+		fmt.Println("Warning: Failed to save image cache to disk", err)
+	}
+
+	return nil
 }
 
 // saveImage saves the image on the file system as a JPEG file

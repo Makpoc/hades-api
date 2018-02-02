@@ -32,18 +32,23 @@ func useHTTP() {
 }
 
 func imageHandler(w http.ResponseWriter, r *http.Request) {
-	coord := strings.ToLower(r.URL.Query().Get("coords"))
-	err := generateImage(coord)
+	coords := strings.ToLower(r.URL.Query().Get("coords"))
+
+	var coordsArray []string
+	if coords != "" {
+		coordsArray = strings.Split(coords, ",")
+	}
+	err := generateImage(coordsArray)
 	if err != nil {
-		returnError(w, err)
+		returnError(w, http.StatusBadRequest, err)
 		return
 	}
 
-	var path = getImagePath(coord)
+	var path = getImagePath(coordsArray)
 
 	img, err := os.Open(path)
 	if err != nil {
-		returnError(w, err)
+		returnError(w, http.StatusInternalServerError, err)
 		return
 	}
 	defer img.Close()
@@ -51,13 +56,13 @@ func imageHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "image/jpeg")
 	_, err = io.Copy(w, img)
 	if err != nil {
-		returnError(w, err)
+		returnError(w, http.StatusInternalServerError, err)
 	}
 }
 
-func returnError(w http.ResponseWriter, err error) {
+func returnError(w http.ResponseWriter, status int, err error) {
 	fmt.Println(err)
-	w.WriteHeader(http.StatusInternalServerError) // perhaps handle this nicer
+	w.WriteHeader(status) // perhaps handle this nicer
 	w.Write([]byte("Something's wrong: " + err.Error()))
 }
 
@@ -68,7 +73,7 @@ func auth(next http.HandlerFunc) http.HandlerFunc {
 			next(w, r)
 			return
 		}
-		returnError(w, fmt.Errorf("unauthorized"))
+		returnError(w, http.StatusForbidden, fmt.Errorf("unauthorized"))
 		return
 	}
 }
