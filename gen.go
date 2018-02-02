@@ -15,21 +15,21 @@ import (
 
 const outputPath = "output/"
 
-func getImagePath(coords []string) string {
-	if len(coords) == 0 {
+func getImagePath(args []string) string {
+	if len(args) == 0 {
 		return filepath.Join(outputPath, "base.jpeg")
 	}
-	return filepath.Join(outputPath, fmt.Sprintf("map_%s.jpeg", strings.Join(coords, "_")))
+	return filepath.Join(outputPath, fmt.Sprintf("map_%s.jpeg", strings.Join(args, "_")))
 }
 
-func generateImage(coords []string) error {
+func generateImage(args []string) error {
 	resPath, err := filepath.Abs("./res")
 	if err != nil {
 		return err
 	}
 
 	// if the image with coords already exists
-	if _, err := os.Stat(getImagePath(coords)); err == nil {
+	if _, err := os.Stat(getImagePath(args)); err == nil {
 		// use it
 		return nil
 	}
@@ -63,9 +63,14 @@ func generateImage(coords []string) error {
 	}
 
 	var result draw.Image
-	if len(coords) > 0 {
-		for _, coord := range coords {
-			result, err = hadesmap.HighlightCoord(dBaseImage, coord)
+	color := hadesmap.DefaultColor
+	if len(args) > 0 {
+		for _, arg := range args {
+			if isColor(arg) {
+				color = hadesmap.Color(arg)
+				continue
+			}
+			result, err = hadesmap.HighlightCoord(dBaseImage, arg, color)
 			if err != nil {
 				return err
 			}
@@ -74,12 +79,28 @@ func generateImage(coords []string) error {
 		result = dBaseImage
 	}
 
-	err = saveImage(getImagePath(coords), result)
+	err = saveImage(getImagePath(args), result)
 	if err != nil {
 		fmt.Println("Warning: Failed to save image cache to disk", err)
 	}
 
 	return nil
+}
+
+// isColor checks if the given string corresponds to a known color
+func isColor(arg string) bool {
+	allColors := []hadesmap.Color{hadesmap.Yellow, hadesmap.Green, hadesmap.Pink, hadesmap.Orange}
+	return contains(allColors, hadesmap.Color(arg))
+}
+
+// contains checks if a set of colors contains given value
+func contains(set []hadesmap.Color, val hadesmap.Color) bool {
+	for _, c := range set {
+		if val == c {
+			return true
+		}
+	}
+	return false
 }
 
 // saveImage saves the image on the file system as a JPEG file

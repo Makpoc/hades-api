@@ -13,14 +13,25 @@ import (
 	"github.com/nfnt/resize"
 )
 
-type color int
+// Color the color to use for highlighting sectors
+type Color string
 
 const (
-	green color = iota
-	orange
-	pink
-	yellow
+	// Green - green
+	Green Color = Color("green")
+
+	// Orange - orange
+	Orange Color = Color("orange")
+
+	// Pink - pink
+	Pink Color = Color("pink")
+
+	// Yellow - yellow
+	Yellow Color = Color("yellow")
 )
+
+// DefaultColor the default highlight color
+const DefaultColor = Orange
 
 type hex struct {
 	img  image.Image
@@ -51,23 +62,9 @@ func GenerateBaseImage(screenFilePath, mapFilePath string) (draw.Image, error) {
 	return baseImage, nil
 }
 
-// func DrawCoordsEmpty(baseBounds image.Rectangle, coords []string) (draw.Image, error) {
-
-// 	tempImage := image.NewRGBA(baseBounds)
-// 	var err error
-// 	for _, coord := range coords {
-// 		tempImage, err = DrawCoords(tempImage, coord)
-// 		if err != nil {
-// 			return nil, err
-// 		}
-// 	}
-
-// 	return tempImage, nil
-// }
-
 // HighlightCoord highlights the provided coordinate.
-func HighlightCoord(baseImage draw.Image, coords string) (draw.Image, error) {
-	hex, err := getHex(coords, green, baseImage.Bounds())
+func HighlightCoord(baseImage draw.Image, coords string, color Color) (draw.Image, error) {
+	hex, err := getHex(coords, color, baseImage.Bounds())
 	if err != nil {
 		return nil, err
 	}
@@ -101,11 +98,11 @@ func LoadImage(filePath string) (image.Image, error) {
 }
 
 // getHex constructs and returns the hex object, containing the image and to rectangle to use on top of the provided base image bounds
-func getHex(coord string, color color, baseBounds image.Rectangle) (hex, error) {
+func getHex(coord string, color Color, baseBounds image.Rectangle) (hex, error) {
 	if !isValidCoord(coord) {
 		return hex{}, fmt.Errorf("invalid coordinate: %s", coord)
 	}
-	hexImg, err := LoadImage("res/hex.png")
+	hexImg, err := LoadImage(fmt.Sprintf("res/hex_%s.png", color))
 	if err != nil {
 		return hex{}, err
 	}
