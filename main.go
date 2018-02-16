@@ -1,26 +1,14 @@
 package main
 
 import (
-	"os"
+	"log"
+
+	"github.com/makpoc/hades-api/server"
 )
 
 func main() {
-
-	var ui string
-	if len(os.Args) > 1 {
-		ui = os.Args[1]
+	err := server.Start()
+	if err != nil {
+		log.Fatal(err)
 	}
-
-	if ui == "cmd" {
-		useCmd()
-	} else if ui == "http" {
-		useHTTP()
-	}
-}
-
-func getEnvPropOrDefault(key, def string) string {
-	if v, ok := os.LookupEnv(key); ok {
-		return v
-	}
-	return def
 }

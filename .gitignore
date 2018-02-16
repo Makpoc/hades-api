@@ -1,4 +1,29 @@
+# Binaries for programs and plugins
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test binary, build with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Project-local glide cache, RE: https://github.com/Masterminds/glide/issues/736
+.glide/
+
+# for the sad times when vscode is easier than vim
 .vscode
-output
+
+# API token store
+client_secret.json
+
+# Binary from go build
+hades-api
+
+# map folders
 res/labels.png
 res/map.png
+res/screenshot.jpeg
+output

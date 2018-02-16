@@ -1,4 +1,4 @@
-package main
+package hmap
 
 import (
 	"fmt"
@@ -9,8 +9,6 @@ import (
 
 	"os"
 	"path/filepath"
-
-	"github.com/makpoc/hadesmap/hadesmap"
 )
 
 const outputPath = "output/"
@@ -39,7 +37,7 @@ func generateImage(args []string) error {
 	baseImagePath := getImagePath(nil)
 	if _, err := os.Stat(baseImagePath); err == nil {
 		// load the image from the disk
-		baseImage, err = hadesmap.LoadImage(baseImagePath)
+		baseImage, err = LoadImage(baseImagePath)
 		if err != nil {
 			return err
 		}
@@ -56,7 +54,7 @@ func generateImage(args []string) error {
 	}
 	if dBaseImage == nil {
 		// if we cannot convert to draw.Image - generate it again.
-		dBaseImage, err = hadesmap.GenerateBaseImage(layers)
+		dBaseImage, err = GenerateBaseImage(layers)
 		if err != nil {
 			return err
 		}
@@ -68,14 +66,14 @@ func generateImage(args []string) error {
 	}
 
 	var result draw.Image
-	color := hadesmap.DefaultColor
+	color := DefaultColor
 	if len(args) > 0 {
 		for _, arg := range args {
 			if isColor(arg) {
-				color = hadesmap.Color(arg)
+				color = Color(arg)
 				continue
 			}
-			result, err = hadesmap.HighlightCoord(dBaseImage, arg, color)
+			result, err = HighlightCoord(dBaseImage, arg, color)
 			if err != nil {
 				return err
 			}
@@ -94,12 +92,12 @@ func generateImage(args []string) error {
 
 // isColor checks if the given string corresponds to a known color
 func isColor(arg string) bool {
-	allColors := []hadesmap.Color{hadesmap.Yellow, hadesmap.Green, hadesmap.Pink, hadesmap.Orange}
-	return contains(allColors, hadesmap.Color(arg))
+	allColors := []Color{Yellow, Green, Pink, Orange}
+	return contains(allColors, Color(arg))
 }
 
 // contains checks if a set of colors contains given value
-func contains(set []hadesmap.Color, val hadesmap.Color) bool {
+func contains(set []Color, val Color) bool {
 	for _, c := range set {
 		if val == c {
 			return true

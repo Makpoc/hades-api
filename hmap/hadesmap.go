@@ -1,4 +1,4 @@
-package hadesmap
+package hmap
 
 import (
 	"fmt"
