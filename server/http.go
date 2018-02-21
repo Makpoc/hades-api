@@ -33,6 +33,7 @@ func Start() error {
 	registerRoutes(s, sheet.GetHandleFuncs())
 	if err = sheet.Init(); err != nil {
 		log.Printf("Failed to initialize Google Sheet client: %v", err)
+		return err
 	}
 
 	fmt.Printf("Starting server on port: %s\n", port)

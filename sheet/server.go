@@ -52,6 +52,7 @@ func timeZonesHandler(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	res.Header().Set("Content-Type", "application/json")
 	res.Write(body)
 }
 
@@ -70,5 +71,6 @@ func usersHandler(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	res.Header().Set("Content-Type", "application/json")
 	res.Write(body)
 }

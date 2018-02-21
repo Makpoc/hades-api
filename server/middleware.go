@@ -35,7 +35,7 @@ func auth(h http.HandlerFunc) http.HandlerFunc {
 func timeLogger(h http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		startTime := time.Now()
-		defer log.Printf("It took %s to respond to TimeZone request", time.Since(startTime))
+		defer log.Printf("It took %s to respond to %s request", time.Since(startTime), req.URL.EscapedPath())
 		h.ServeHTTP(res, req)
 	})
 }

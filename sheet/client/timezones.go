@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/makpoc/hades-api/sheet/models"
@@ -37,6 +38,26 @@ func (s *Sheet) GetTimeZones() ([]models.UserTime, error) {
 
 	sort.Sort(result)
 	return result, nil
+}
+
+// GetTimeZone returns the time zone information for the provided user
+func (s *Sheet) GetTimeZone(user string) (models.UserTime, error) {
+	if user == "" {
+		return models.UserTime{}, fmt.Errorf("empty user provided")
+	}
+
+	allTz, err := s.GetTimeZones()
+	if err != nil {
+		return models.UserTime{}, err
+	}
+
+	for _, tz := range allTz {
+		if strings.ToLower(user) == strings.ToLower(tz.UserName) {
+			return tz, nil
+		}
+	}
+
+	return models.UserTime{}, fmt.Errorf("no time zone information found for user %s", user)
 }
 
 // buildUserTime builds UserTime from sheet cell values
