@@ -99,11 +99,19 @@ func buildUser(v []interface{}) (*models.User, error) {
 	} else {
 		usr.TsCapacity = tsCap
 	}
+
 	tsModules, err := getModules(v, rowDesc["tsMods"])
 	if err != nil {
 		log.Printf("Failed to parse TS Modules for user %s: %v", usr.Name, err)
 	} else {
 		usr.TsModules = tsModules
+	}
+
+	minerLvl, err := getSingleCellVal(v, rowDesc["minerLvl"])
+	if err != nil {
+		log.Printf("Failed to parse miner level for user %s: %v", usr.Name, err)
+	} else {
+		usr.MinerLevel = minerLvl
 	}
 
 	minerModules, err := getModules(v, rowDesc["minerMods"])

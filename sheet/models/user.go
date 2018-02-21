@@ -7,6 +7,7 @@ type User struct {
 	BsModules    Modules
 	TsModules    Modules
 	TsCapacity   string
+	MinerLevel   string
 	MinerModules Modules
 	TZ           UserTime
 }
