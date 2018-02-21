@@ -86,6 +86,20 @@ func buildUser(v []interface{}) (*models.User, error) {
 		usr.BsRole = role
 	}
 
+	weapon, err := getSingleCellVal(v, rowDesc["bsWeapon"])
+	if err != nil {
+		log.Printf("Failed to parse BS weapon for user %s: %v", usr.Name, err)
+	} else {
+		usr.BsWeapon = weapon
+	}
+
+	shield, err := getSingleCellVal(v, rowDesc["bsShield"])
+	if err != nil {
+		log.Printf("Failed to parse BS shield for user %s: %v", usr.Name, err)
+	} else {
+		usr.BsShield = shield
+	}
+
 	bsModules, err := getModules(v, rowDesc["bsMods"])
 	if err != nil {
 		log.Printf("Failed to parse BS Modules for user %s: %v", usr.Name, err)

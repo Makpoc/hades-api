@@ -4,6 +4,8 @@ package models
 type User struct {
 	Name         string
 	BsRole       string
+	BsWeapon     string
+	BsShield     string
 	BsModules    Modules
 	TsModules    Modules
 	TsCapacity   string
