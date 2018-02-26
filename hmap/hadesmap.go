@@ -38,7 +38,8 @@ type hex struct {
 	rect image.Rectangle
 }
 
-const cellSize = 1.0 / 7.0 // 7 cells in a map both horizontally and vertically
+const cellSizeHight = (1.0 / 7.0)         // 7 cells in a map horizontally
+const cellSizeWight = (1.0 / 7.0) - 0.007 // 7 cells in a map vertically including some offset
 
 // GenerateBaseImage generates the base image, composed of the real in game map with overlayed coordinates.
 func GenerateBaseImage(layers []string) (draw.Image, error) {
@@ -111,7 +112,7 @@ func getHex(coord string, color Color, baseBounds image.Rectangle) (hex, error) 
 		return hex{}, err
 	}
 
-	hexImageResized := resize.Resize(0, uint(cellSize*float64(baseBounds.Dy())), hexImg, resize.Lanczos3)
+	hexImageResized := resize.Resize(0, uint(cellSizeHight*float64(baseBounds.Dy())), hexImg, resize.Lanczos3)
 	hexRect := getTargetPoint(coord, baseBounds, hexImageResized.Bounds())
 
 	return hex{img: hexImageResized, rect: hexRect}, nil
@@ -124,9 +125,9 @@ func isValidCoord(coord string) bool {
 		"b1", "b2", "b3", "b4", "b5",
 		"c1", "c2", "c3", "c4", "c5", "c6",
 		"d1", "d2", "d3", "d4", "d5", "d6", "d7",
-		"e2", "e3", "e4", "e5", "e6", "e7",
-		"f3", "f4", "f5", "f6", "f7",
-		"g4", "g5", "g6", "g7",
+		"e1", "e2", "e3", "e4", "e5", "e6",
+		"f1", "f2", "f3", "f4", "f5",
+		"g1", "g2", "g3", "g4",
 	}
 
 	coord = strings.ToLower(coord)

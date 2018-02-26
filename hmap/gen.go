@@ -47,11 +47,7 @@ func generateImage(args []string) error {
 		}
 	}
 
-	var layers = []string{
-		resPath + "/screenshot.jpeg",
-		resPath + "/map.png",
-		resPath + "/labels.png",
-	}
+	var layers = getLayers(resPath)
 	if dBaseImage == nil {
 		// if we cannot convert to draw.Image - generate it again.
 		dBaseImage, err = GenerateBaseImage(layers)
@@ -88,6 +84,24 @@ func generateImage(args []string) error {
 	}
 
 	return nil
+}
+
+func getLayers(resPath string) []string {
+	layers := []string{
+		resPath + "/screenshot.jpeg",
+		resPath + "/map.png",
+		resPath + "/labels.png",
+	}
+
+	var result []string
+
+	for _, layer := range layers {
+		if _, err := os.Stat(layer); err == nil {
+			result = append(result, layer)
+		}
+	}
+
+	return result
 }
 
 // isColor checks if the given string corresponds to a known color
