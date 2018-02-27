@@ -28,10 +28,15 @@ const (
 
 	// Yellow - yellow
 	Yellow Color = Color("yellow")
+
+	// Red - red
+	Red Color = Color("red")
+	// Warn - warning pattern (yellow-black stripes)
+	Warn Color = Color("warn")
 )
 
 // DefaultColor the default highlight color
-const DefaultColor = Orange
+const DefaultColor = Green
 
 type hex struct {
 	img  image.Image

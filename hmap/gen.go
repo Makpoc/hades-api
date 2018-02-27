@@ -106,7 +106,7 @@ func getLayers(resPath string) []string {
 
 // isColor checks if the given string corresponds to a known color
 func isColor(arg string) bool {
-	allColors := []Color{Yellow, Green, Pink, Orange}
+	allColors := []Color{Yellow, Green, Pink, Orange, Red, Warn}
 	return contains(allColors, Color(arg))
 }
 
