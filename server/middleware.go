@@ -15,7 +15,7 @@ func auth(h http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var secret string
 		var ok bool
-		if secret, ok = os.LookupEnv("secret"); !ok {
+		if secret, ok = os.LookupEnv("SECRET"); !ok {
 			// server was not configured with secret
 			h.ServeHTTP(w, r)
 			return
