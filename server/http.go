@@ -22,7 +22,7 @@ func Start() error {
 	r := mux.NewRouter().StrictSlash(true)
 	s := r.PathPrefix("/api/v1").Subrouter()
 
-	port := utils.GetEnvPropOrDefault("port", "8080")
+	port := utils.GetEnvPropOrDefault("API_PORT", "8080")
 	var portInt, err = strconv.Atoi(port)
 	if err != nil || portInt < 1 || portInt > 65535 {
 		fmt.Printf("Cannot use %s as port - not a valid port\n", port)

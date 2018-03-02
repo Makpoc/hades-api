@@ -51,8 +51,16 @@ func (s *Sheet) GetTimeZone(user string) (models.UserTime, error) {
 		return models.UserTime{}, err
 	}
 
+	user = strings.TrimSpace(strings.ToLower(user))
 	for _, tz := range allTz {
-		if strings.ToLower(user) == strings.ToLower(tz.UserName) {
+		if user == strings.TrimSpace(strings.ToLower(tz.UserName)) {
+			return tz, nil
+		}
+	}
+
+	// try partial match
+	for _, tz := range allTz {
+		if strings.Contains(strings.TrimSpace(strings.ToLower(tz.UserName)), user) {
 			return tz, nil
 		}
 	}

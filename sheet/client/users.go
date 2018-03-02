@@ -64,6 +64,45 @@ func (s *Sheet) GetUsers() (models.Users, error) {
 	return result, nil
 }
 
+// GetUser returns the requested user from the WS sheet
+func (s *Sheet) GetUser(username string) (*models.User, error) {
+	const userColumnFrom = "B"
+	const userColumnTo = "AJ"
+
+	var sheetRange = fmt.Sprintf("%s!%s%d:%s%d", wsFleetSheet, userColumnFrom, minRowN, userColumnTo, maxRowN)
+	users, err := s.service.Spreadsheets.Values.Get(s.id, sheetRange).Do()
+	if err != nil {
+		return nil, err
+	}
+
+	if len(users.Values) == 0 {
+		return &models.User{}, nil
+	}
+
+	tz, err := s.GetTimeZone(username)
+	if err != nil {
+		log.Printf("failed to load time zone information for user %s: %v", username, err)
+	}
+
+	values := getDataSubset(users.Values)
+	for _, u := range values {
+		name, err := getSingleCellVal(u, rowDesc["name"])
+		if err != nil {
+			log.Printf("Failed to get username from sheet for user %#v, error was: %#v\n", u, err)
+			continue
+		}
+		if strings.ToLower(name) == strings.ToLower(username) {
+			usr, err := buildUser(u)
+			if err != nil {
+				return nil, err
+			}
+			usr.TZ = tz
+			return usr, nil
+		}
+	}
+	return nil, fmt.Errorf("no information about %s in sheet", username)
+}
+
 func buildUser(v []interface{}) (*models.User, error) {
 	usr := &models.User{}
 	if len(v) == 0 {
