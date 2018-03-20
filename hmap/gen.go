@@ -12,6 +12,8 @@ import (
 )
 
 const outputPath = "output/"
+const resPath = "res/"
+const staticPath = "static/"
 
 func getImagePath(args []string) string {
 	if len(args) == 0 {
@@ -21,13 +23,9 @@ func getImagePath(args []string) string {
 }
 
 func generateImage(args []string) error {
-	resPath, err := filepath.Abs("./res")
-	if err != nil {
-		return err
-	}
-
+	var err error
 	// if the image with coords already exists
-	if _, err := os.Stat(getImagePath(args)); err == nil {
+	if _, err = os.Stat(getImagePath(args)); err == nil {
 		// use it
 		return nil
 	}
@@ -47,7 +45,7 @@ func generateImage(args []string) error {
 		}
 	}
 
-	var layers = getLayers(resPath)
+	var layers = getLayers()
 	if dBaseImage == nil {
 		// if we cannot convert to draw.Image - generate it again.
 		dBaseImage, err = GenerateBaseImage(layers)
@@ -86,10 +84,10 @@ func generateImage(args []string) error {
 	return nil
 }
 
-func getLayers(resPath string) []string {
+func getLayers() []string {
 	layers := []string{
 		resPath + "/screenshot.jpeg",
-		resPath + "/map.png",
+		staticPath + "/coords.png",
 		resPath + "/labels.png",
 	}
 

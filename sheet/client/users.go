@@ -179,7 +179,7 @@ func buildUser(v []interface{}) (*models.User, error) {
 
 func getSingleCellVal(v []interface{}, vr valRange) (string, error) {
 	index := vr.start
-	if len(v) >= index {
+	if len(v) > index {
 		value, ok := v[index].(string)
 		if !ok {
 			return "", fmt.Errorf("value %v at %d not a string", v[index], index)

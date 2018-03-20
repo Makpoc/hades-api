@@ -7,6 +7,7 @@ import (
 	"image/jpeg"
 	"image/png"
 	"os"
+	"path"
 
 	"strings"
 
@@ -112,7 +113,7 @@ func getHex(coord string, color Color, baseBounds image.Rectangle) (hex, error) 
 	if !isValidCoord(coord) {
 		return hex{}, fmt.Errorf("invalid coordinate: %s", coord)
 	}
-	hexImg, err := LoadImage(fmt.Sprintf("res/hex_%s.png", color))
+	hexImg, err := LoadImage(path.Join(staticPath, fmt.Sprintf("hex_%s.png", color)))
 	if err != nil {
 		return hex{}, err
 	}
