@@ -3,6 +3,7 @@ package models
 // User represents an user
 type User struct {
 	Name         string
+	DiscordID    string
 	BsRole       string
 	BsWeapon     string
 	BsShield     string

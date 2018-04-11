@@ -50,6 +50,11 @@ func (s *Sheet) GetUsers() (models.Users, error) {
 		log.Printf("failed to load time zone information: %v", err)
 	}
 
+	userDiscordIds, err := s.getUserDiscordIDs()
+	if err != nil {
+		log.Printf("failed to load user mappings information: %v", err)
+	}
+
 	var result models.Users
 	values := getDataSubset(users.Values)
 	for _, u := range values {
@@ -59,6 +64,9 @@ func (s *Sheet) GetUsers() (models.Users, error) {
 			continue
 		}
 		usr.TZ = getUserTz(usr.Name, tz)
+		if userDiscordIds != nil {
+			usr.DiscordID = userDiscordIds[strings.ToLower(usr.Name)]
+		}
 		result = append(result, *usr)
 	}
 	return result, nil
@@ -83,6 +91,10 @@ func (s *Sheet) GetUser(username string) (*models.User, error) {
 	if err != nil {
 		log.Printf("failed to load time zone information for user %s: %v", username, err)
 	}
+	discordID, err := s.getUserDiscordID(username)
+	if err != nil {
+		log.Printf("failed to load discordID mapping information for user %s: %v", username, err)
+	}
 
 	values := getDataSubset(users.Values)
 	for _, u := range values {
@@ -97,6 +109,7 @@ func (s *Sheet) GetUser(username string) (*models.User, error) {
 				return nil, err
 			}
 			usr.TZ = tz
+			usr.DiscordID = discordID
 			return usr, nil
 		}
 	}
