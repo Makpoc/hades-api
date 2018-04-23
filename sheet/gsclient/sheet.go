@@ -19,7 +19,7 @@ import (
 )
 
 const minRowN = 1
-const maxRowN = 999
+const maxRowN = 50
 
 // Sheet contains reference to Google sheets service together with sheet ID
 type Sheet struct {
