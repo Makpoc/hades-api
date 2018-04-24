@@ -67,11 +67,83 @@ func ParseOffset(offset string) (Offset, error) {
 	return Offset{H: offsetHInt, M: offsetMInt}, nil
 }
 
+type Availability struct {
+	From time.Duration
+	To   time.Duration
+}
+
+func (a Availability) String() string {
+	return fmt.Sprintf("%02d:%02d-%02d:%02d", int(a.From.Hours()), int(a.From.Minutes())-int(a.From.Hours())*60, int(a.To.Hours()), int(a.To.Minutes())-int(a.To.Hours())*60)
+}
+
+func ParseAvailability(rawValue string) ([]Availability, error) {
+	// format:
+	// 8-10;11:00-13:00;15:30-20:45
+	if rawValue == "" {
+		return []Availability{}, nil
+	}
+	allAvails := strings.Split(rawValue, ";")
+
+	var result []Availability
+	for _, avail := range allAvails {
+		fromTo := strings.Split(avail, "-")
+		if len(fromTo) != 2 {
+			return nil, fmt.Errorf("Failed to parse availability. Unknown range: %s", avail)
+		}
+
+		from := fromTo[0]
+		to := fromTo[1]
+
+		var currAvailability Availability
+		var err error
+		currAvailability.From, err = parseTime(from)
+		if err != nil {
+			return nil, err
+		}
+		currAvailability.To, err = parseTime(to)
+		if err != nil {
+			return nil, err
+		}
+
+		result = append(result, currAvailability)
+	}
+
+	return result, nil
+}
+
+func parseTime(avail string) (time.Duration, error) {
+	if avail == "" {
+		return -1, fmt.Errorf("empty time")
+	}
+
+	var hour, min int
+	var err error
+	if strings.Contains(avail, ":") {
+		hourMin := strings.SplitN(avail, ":", 2)
+		hour, err = strconv.Atoi(hourMin[0])
+		if err != nil {
+			return -1, fmt.Errorf("failed to parse hours: %v", err)
+		}
+		min, err = strconv.Atoi(hourMin[1])
+		if err != nil {
+			return -1, fmt.Errorf("failed to parse minutes: %v", err)
+		}
+	} else {
+		hour, err = strconv.Atoi(avail)
+		if err != nil {
+			return -1, fmt.Errorf("failed to parse hours: %v", err)
+		}
+	}
+
+	return time.ParseDuration(fmt.Sprintf("%dh%dm", hour, min))
+}
+
 // UserTime contains information about users and their time
 type UserTime struct {
-	UserName    string
-	CurrentTime time.Time
-	Offset      Offset
+	UserName     string
+	CurrentTime  time.Time
+	Offset       Offset
+	Availability []Availability `json:",omitempty"`
 }
 
 // UserTimes is a list of UserTimes

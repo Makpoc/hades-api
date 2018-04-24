@@ -15,7 +15,7 @@ const tzSheet = "Timezones"
 // GetTimeZones returns the list with users and their corresponding offset and currentTime
 func (s *Sheet) GetTimeZones() ([]models.UserTime, error) {
 	const userColumn = "A"
-	const offsetColumn = "C"
+	const offsetColumn = "D"
 	users, err := s.service.Spreadsheets.Values.Get(s.id, fmt.Sprintf("%s!%s%d:%s%d", tzSheet, userColumn, minRowN, offsetColumn, maxRowN)).Do()
 	if err != nil {
 		return nil, err
@@ -37,6 +37,7 @@ func (s *Sheet) GetTimeZones() ([]models.UserTime, error) {
 	}
 
 	sort.Sort(result)
+	fmt.Printf("%v\n", result)
 	return result, nil
 }
 
@@ -71,17 +72,29 @@ func (s *Sheet) GetTimeZone(user string) (models.UserTime, error) {
 // buildUserTime builds UserTime from sheet cell values
 func buildUserTime(v []interface{}) models.UserTime {
 	entry := models.UserTime{}
+	var err error
 	if len(v) >= 1 {
 		entry.UserName = fmt.Sprintf("%s", v[0])
 	}
-	if len(v) == 3 {
+	if len(v) >= 3 {
 		offsetStr, ok := v[2].(string)
 		if !ok {
 			fmt.Println("Cell value is not a string!")
 		}
 
-		var err error
 		entry.Offset, err = models.ParseOffset(offsetStr)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+
+	if len(v) >= 4 {
+		availability, ok := v[3].(string)
+		if !ok {
+			fmt.Println("Cell value is not a string!")
+		}
+		entry.Availability, err = models.ParseAvailability(availability)
+		fmt.Println(entry.Availability)
 		if err != nil {
 			fmt.Println(err)
 		}
