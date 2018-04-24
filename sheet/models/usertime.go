@@ -91,8 +91,8 @@ func ParseAvailability(rawValue string) ([]Availability, error) {
 			return nil, fmt.Errorf("Failed to parse availability. Unknown range: %s", avail)
 		}
 
-		from := fromTo[0]
-		to := fromTo[1]
+		from := strings.TrimSpace(fromTo[0])
+		to := strings.TrimSpace(fromTo[1])
 
 		var currAvailability Availability
 		var err error
